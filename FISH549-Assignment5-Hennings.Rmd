@@ -1,0 +1,90 @@
+---
+title: "FISH 549 Assignment 5"
+author: "Andrea Hennings"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r load packages, include=FALSE}
+## load packages
+library(here)
+library(dplyr)
+library(ggplot2)
+library(patchwork)
+
+```
+
+```{r load data, include=FALSE}
+## load data
+fish <- read.csv(here("data/siscowet.csv"))
+
+```
+<br>
+
+##### **Exploratory Figures**
+
+```{r data munging, include=FALSE}
+## check for length and weight NAs
+sum(is.na(fish$len))
+sum(is.na(fish$wgt))
+
+## remove outlier weight and NAs and replot
+fish <- fish %>%
+  filter(wgt != 15800) %>%
+  filter(!is.na(wgt))
+
+```
+
+```{r explore plots, echo=FALSE}
+## length-weight plot
+plot(x = fish$len, y = fish$wgt, xlab = "Length (mm)", ylab = "Weight (g)")
+
+## remove sex NAs
+fish_sex <- fish %>%
+  filter(!is.na(sex))
+
+## sex-weight and sex-length boxplots
+boxplot(fish_sex$wgt ~ fish_sex$sex, xlab = "Sex", ylab = "Weight (g)")
+boxplot(fish_sex$len ~ fish_sex$sex, xlab = "Sex", ylab = "Length (mm)")
+```
+
+##### **Expository Figures**
+<br>
+```{r expository figures, echo=FALSE}
+
+## update to Male, Female
+fish_sex <- fish_sex %>%
+  mutate(sex = replace(sex, sex == "M", "Male")) %>%
+  mutate(sex = replace(sex, sex == "F", "Female"))
+
+## sex-length violin plot 
+sex_len_plot <- ggplot(fish_sex,
+                       aes(x = sex, y = len, fill = sex)) +
+  ylab("Total Length (mm)") +
+  geom_violin() +
+  theme_minimal() +
+  theme(axis.title.x = element_blank(),
+        axis.text.x = element_blank())
+
+## sex-weight violin plot 
+sex_wgt_plot <- ggplot(fish_sex,
+                       aes(x = sex, y = wgt, fill = sex)) +
+  xlab("Sex") +
+  ylab("Weight (g)") +
+  geom_violin() +
+  theme_minimal()
+
+## combine violin plots
+sex_len_plot / sex_wgt_plot +
+  plot_layout(guides = 'collect') +
+  plot_annotation(title = "Length and weight distributions of female and male Siscowet Lake Trout", subtitle = "Captured by gillnet at four Lake Superior sampling sites") +
+  theme(plot.tag = element_text(size = 6))
+
+```
+
+
+
