@@ -85,6 +85,3 @@ sex_len_plot / sex_wgt_plot +
   theme(plot.tag = element_text(size = 6))
 
 ```
-
-
-
